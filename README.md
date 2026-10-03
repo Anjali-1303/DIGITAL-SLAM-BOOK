@@ -1,13 +1,13 @@
-# 💌 Digital Slam Book
+#  Digital Slam Book
 
 A web-based digital autograph & slam book application built for collecting memories from friends and classmates. Designed with a public entry submission form and a password-protected admin dashboard so secret messages remain private.
 
 ---
 
-## ✨ Features
+##  Features
 
 - **Public Autograph Form**: Friends can write personal memories, answer fun questions, and leave a paragraph.
-- **🔐 Secret Messages**: Supports optional secret messages with anonymous sender options.
+- ** Secret Messages**: Supports optional secret messages with anonymous sender options.
 - **Strict Privacy**: Visitors can submit memories, but cannot view anyone else's submissions or secrets.
 - **Protected Owner Dashboard**: Access to entries (`/admin.html`) is secured with an Admin Passcode.
 - **Dashboard Tools**: Search/filter entries by name or text, and delete unwanted entries.
@@ -53,8 +53,7 @@ digital-slam-book/
 
 3. **Open in browser**
    - **Public Autograph Page**: `http://localhost:3000`
-   - **Owner Dashboard**: `http://localhost:3000/admin.html`
-   - **Default Passcode**: `anjali123`
+
 
 ---
 
@@ -71,10 +70,3 @@ digital-slam-book/
 7. Click **Deploy**.
 
 ---
-
-## ⚙️ Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server listening port | `3000` |
-| `ADMIN_PASSWORD` | Passcode for admin dashboard & API | `anjali123` |
