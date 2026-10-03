@@ -18,6 +18,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS entries(
     q2 TEXT NOT NULL,
     q3 TEXT NOT NULL,
     anonymous INTEGER DEFAULT 0,
+    selfie TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
 
@@ -25,7 +26,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS entries(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Migration check: ensure selfie column exists
+// Migration check: ensure selfie column exists on existing databases
 try {
     db.exec(`ALTER TABLE entries ADD COLUMN selfie TEXT`);
 } catch (e) {
