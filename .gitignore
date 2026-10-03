@@ -1,0 +1,6 @@
+node_modules/
+slambook.db
+slambook.db-journal
+.env
+.dist/
+*.log

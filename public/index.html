@@ -1,0 +1,258 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Digital Slam Book Of Anjali V</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            background: #f8f5ff;
+            color: #201b2d
+        }
+
+        .wrap {
+            max-width: 850px;
+            margin: auto;
+            padding: 32px 18px
+        }
+
+        .hero {
+            text-align: center;
+            padding: 38px 18px
+        }
+
+        .eyebrow {
+            letter-spacing: 3px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #7955d9
+        }
+
+        .hero h1 {
+            font-family: Georgia, serif;
+            font-size: clamp(42px, 8vw, 76px);
+            margin: 10px 0;
+            background: linear-gradient(90deg, #7048d8, #d35b99);
+            -webkit-background-clip: text;
+            color: transparent
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: #6d6679
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e8e1f3;
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 14px 45px #5e3aa014;
+            margin-bottom: 20px
+        }
+
+        .section-title {
+            font-family: Georgia, serif;
+            font-size: 26px;
+            margin: 0 0 8px
+        }
+
+        .hint {
+            color: #777080;
+            font-size: 14px;
+            margin-bottom: 22px
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin: 18px 0 8px
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #dcd4e8;
+            border-radius: 14px;
+            font: inherit;
+            outline: none;
+            background: #fcfbfe
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #8a69dc;
+            box-shadow: 0 0 0 4px #8a69dc18
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px
+        }
+
+        .secret {
+            background: #faf5ff;
+            border: 1px dashed #a98be8
+        }
+
+        .check {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #665e72
+        }
+
+        .check input {
+            width: auto
+        }
+
+        .btn {
+            width: 100%;
+            border: 0;
+            border-radius: 15px;
+            padding: 15px;
+            font-weight: 800;
+            font-size: 16px;
+            color: white;
+            background: linear-gradient(90deg, #7048d8, #c34f92);
+            cursor: pointer;
+            margin-top: 24px
+        }
+
+        .success {
+            display: none;
+            text-align: center
+        }
+
+        .success h2 {
+            font-family: Georgia, serif;
+            font-size: 34px
+        }
+
+        .admin-link {
+            text-align: center;
+            margin: 20px
+        }
+
+        .admin-link a {
+            color: #7654cc
+        }
+
+        .entries {
+            display: grid;
+            gap: 14px
+        }
+
+        .entry {
+            border: 1px solid #e6dfef;
+            border-radius: 18px;
+            padding: 18px;
+            background: #fff
+        }
+
+        .entry h3 {
+            margin: 0 0 6px
+        }
+
+        .entry small {
+            color: #82798d
+        }
+
+        .pill {
+            display: inline-block;
+            background: #f0eaff;
+            color: #6843c5;
+            padding: 5px 9px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .answer {
+            margin-top: 12px
+        }
+
+        .answer b {
+            display: block;
+            font-size: 13px;
+            color: #6b6176;
+            margin-bottom: 4px
+        }
+
+        .secretbox {
+            background: #fff6fb;
+            border-radius: 12px;
+            padding: 12px
+        }
+
+        .hide {
+            display: none
+        }
+
+        @media(max-width:650px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .card {
+                padding: 21px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <section class="hero">
+            <div class="eyebrow">A DIGITAL AUTOGRAPH BOOK OF ANJALI V </div>
+            <h1>Digital Slam Book</h1>
+            <p>Years will pass. These words will stay.</p>
+        </section>
+        <section id="formCard" class="card">
+            <h2 class="section-title">Leave an Autograph</h2>
+            <p class="hint">Take a few minutes to leave a memory that can be read years from now.</p>
+            <form id="form">
+                <div class="grid">
+                    <div><label>Your Name</label><input name="name" required placeholder="Enter your name"></div>
+                    <div><label>Phone Number</label><input name="phone" required type="tel"
+                            placeholder="Enter your number"></div>
+                </div><label>Write a Paragraph About Me</label><textarea name="paragraph" required
+                    placeholder="Write about me, our friendship, your memories, your impression of me..."></textarea><label>🔐
+                    One Secret Message</label><textarea name="secret" required class="secret"
+                    placeholder="Something you've always wanted to tell me but never said..."></textarea><label
+                    class="check"><input type="checkbox" name="anonymous"> Keep my name anonymous for the secret
+                    message</label><label>1. What is your favourite memory with me?</label><textarea name="q1"
+                    required></textarea><label>2. Describe me in three words.</label><textarea name="q2"
+                    required></textarea><label>3. What is one thing you want me to remember about you after
+                    college?</label><textarea name="q3" required></textarea><button class="btn">Submit Autograph
+                    ✨</button>
+            </form>
+        </section>
+        <section id="success" class="card success">
+            <div style="font-size:50px">💌</div>
+            <h2>Autograph Saved!</h2>
+            <p>Your message has become part of the memory book.</p><button class="btn" onclick="location.reload()">Write
+                Another</button>
+        </section>
+        <footer class="admin-link"><a href="admin.html" style="color: #a49cb3; font-size: 13px; text-decoration: none;">🔒 Owner Access</a></footer>
+    </main>
+    <script>document.querySelector('#form').addEventListener('submit', async e => { e.preventDefault(); const f = new FormData(e.target), data = Object.fromEntries(f.entries()); data.anonymous = !!data.anonymous; const r = await fetch('/api/entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (r.ok) { document.querySelector('#formCard').style.display = 'none'; document.querySelector('#success').style.display = 'block'; } else alert((await r.json()).error || 'Submission failed'); });</script>
+</body>
+
+</html>
