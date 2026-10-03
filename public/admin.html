@@ -206,10 +206,38 @@
         .entry-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             border-bottom: 1px solid #f2ecf9;
-            padding-bottom: 14px;
+            padding-bottom: 16px;
             margin-bottom: 16px;
+        }
+
+        .selfie-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(112, 72, 216, 0.2);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .selfie-avatar:hover {
+            transform: scale(1.08);
+        }
+
+        .verified-badge {
+            display: inline-block;
+            background: #e6fffa;
+            color: #234e52;
+            border: 1px solid #b2f5ea;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 99px;
+            margin-top: 4px;
         }
 
         .entry-user {
@@ -287,9 +315,52 @@
             color: var(--muted);
         }
 
-        .empty-state p {
-            font-size: 16px;
-            margin-top: 10px;
+        /* Modal Preview */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 10, 25, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .modal-content {
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-img {
+            width: 100%;
+            max-height: 380px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 3px solid var(--primary);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
         }
     </style>
 </head>
@@ -322,7 +393,7 @@
             <header class="header">
                 <div>
                     <h1>💌 Slam Book Dashboard</h1>
-                    <p style="color:var(--muted); font-size:14px;">Private messages & autographs left for Anjali V</p>
+                    <p style="color:var(--muted); font-size:14px;">Private messages & verified selfies left for Anjali V</p>
                 </div>
                 <div class="actions">
                     <a href="/" class="btn btn-outline">← Public Page</a>
@@ -336,6 +407,16 @@
             </div>
 
             <div id="entriesList">Loading entries...</div>
+        </div>
+    </div>
+
+    <!-- Selfie Zoom Modal -->
+    <div class="modal-overlay" id="selfieModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSelfieModal()">&times;</button>
+            <h3 id="modalTitle" style="font-family:Georgia, serif; margin-bottom:12px; color:var(--primary);">Identity Verification Selfie</h3>
+            <img id="modalImg" class="modal-img" alt="Full Selfie">
+            <p id="modalSub" style="margin-top:10px; font-size:13px; color:var(--muted);"></p>
         </div>
     </div>
 
@@ -435,9 +516,15 @@
             listEl.innerHTML = entries.map(x => `
                 <article class="entry-card" id="entry-${x.id}">
                     <div class="entry-header">
-                        <div>
-                            <div class="entry-user">${esc(x.name)}</div>
-                            <div class="entry-meta">📞 ${esc(x.phone)} &bull; 🕒 ${formatDate(x.created_at)}</div>
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            ${x.selfie ? `
+                                <img src="${x.selfie}" alt="Selfie of ${esc(x.name)}" class="selfie-avatar" onclick="openSelfieModal('${x.id}')" title="Click to view full selfie photo">
+                            ` : `<div style="width:60px; height:60px; border-radius:50%; background:#eedffc; display:flex; align-items:center; justify-content:center; font-size:24px;">👤</div>`}
+                            <div>
+                                <div class="entry-user">${esc(x.name)}</div>
+                                <div class="entry-meta">📞 ${esc(x.phone)} &bull; 🕒 ${formatDate(x.created_at)}</div>
+                                <span class="verified-badge">✓ Selfie Verified</span>
+                            </div>
                         </div>
                         <button class="btn btn-danger" onclick="deleteEntry(${x.id})">Delete 🗑️</button>
                     </div>
@@ -467,6 +554,19 @@
                     </div>
                 </article>
             `).join('');
+        }
+
+        function openSelfieModal(id) {
+            const entry = allEntries.find(e => e.id == id);
+            if (!entry || !entry.selfie) return;
+            document.getElementById('modalImg').src = entry.selfie;
+            document.getElementById('modalTitle').textContent = `Selfie Verification: ${entry.name}`;
+            document.getElementById('modalSub').textContent = `Phone: ${entry.phone} • Submitted: ${formatDate(entry.created_at)}`;
+            document.getElementById('selfieModal').style.display = 'flex';
+        }
+
+        function closeSelfieModal() {
+            document.getElementById('selfieModal').style.display = 'none';
         }
 
         async function deleteEntry(id) {

@@ -21,8 +21,16 @@ db.exec(`CREATE TABLE IF NOT EXISTS entries(
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
 
-app.use(express.json());
+// Increase JSON limit for Base64 image payload (selfie photos)
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Migration check: ensure selfie column exists
+try {
+    db.exec(`ALTER TABLE entries ADD COLUMN selfie TEXT`);
+} catch (e) {
+    // Column already exists
+}
 
 // Middleware to protect admin routes
 function requireAdmin(req, res, next) {
@@ -47,12 +55,16 @@ app.post('/api/login', (req, res) => {
 
 // Public submission route
 app.post('/api/entries', (req, res) => {
-    const { name, phone, paragraph, secret, q1, q2, q3, anonymous } = req.body || {};
+    const { name, phone, paragraph, secret, q1, q2, q3, anonymous, selfie } = req.body || {};
     if (![name, phone, paragraph, secret, q1, q2, q3].every(x => typeof x === 'string' && x.trim())) {
-        return res.status(400).json({ error: 'Please fill out all required fields.' });
+        return res.status(400).json({ error: 'Please fill out all required text fields.' });
     }
-    const stmt = db.prepare('INSERT INTO entries(name, phone, paragraph, secret, q1, q2, q3, anonymous) VALUES(?,?,?,?,?,?,?,?)');
-    const info = stmt.run(name.trim(), phone.trim(), paragraph.trim(), secret.trim(), q1.trim(), q2.trim(), q3.trim(), anonymous ? 1 : 0);
+    if (!selfie || typeof selfie !== 'string' || !selfie.startsWith('data:image')) {
+        return res.status(400).json({ error: 'Please take or upload a selfie for identity verification!' });
+    }
+
+    const stmt = db.prepare('INSERT INTO entries(name, phone, paragraph, secret, q1, q2, q3, anonymous, selfie) VALUES(?,?,?,?,?,?,?,?,?)');
+    const info = stmt.run(name.trim(), phone.trim(), paragraph.trim(), secret.trim(), q1.trim(), q2.trim(), q3.trim(), anonymous ? 1 : 0, selfie);
     res.json({ ok: true, id: info.lastInsertRowid });
 });
 
