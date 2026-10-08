@@ -465,6 +465,21 @@
             fileInput.value = '';
         });
 
+        // Auto-save drafts
+        const formElements = document.querySelectorAll('#form input:not([type="file"]):not([type="hidden"]), #form textarea');
+        formElements.forEach(el => {
+            if (!el.name) return;
+            const saved = localStorage.getItem('slambook_' + el.name);
+            if (saved !== null) {
+                if (el.type === 'checkbox') el.checked = saved === 'true';
+                else el.value = saved;
+            }
+            el.addEventListener('input', () => {
+                if (el.type === 'checkbox') localStorage.setItem('slambook_' + el.name, el.checked);
+                else localStorage.setItem('slambook_' + el.name, el.value);
+            });
+        });
+
         // Form Submit
         document.querySelector('#form').addEventListener('submit', async e => {
             e.preventDefault();
@@ -485,6 +500,9 @@
                 });
 
                 if (r.ok) {
+                    // Clear auto-save
+                    formElements.forEach(el => localStorage.removeItem('slambook_' + el.name));
+
                     document.querySelector('#formCard').style.display = 'none';
                     document.querySelector('#success').style.display = 'block';
                 } else {

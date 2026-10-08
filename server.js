@@ -1,63 +1,34 @@
 const express = require('express');
 const path = require('path');
-const { Pool } = require('pg');
+const mongoose = require('mongoose');
 
 const app = express();
 
 // Admin password configuration
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'anjali123';
 
-// Database selection: PostgreSQL if DATABASE_URL is set, fallback to SQLite locally
-const usePostgres = !!process.env.DATABASE_URL;
-let db = null;
-let pgPool = null;
+// Database connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/slambook';
 
-if (usePostgres) {
-    console.log('Connecting to Cloud PostgreSQL Database...');
-    pgPool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
-    });
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Error connecting to MongoDB:', err));
 
-    // Auto-create PostgreSQL table
-    pgPool.query(`
-        CREATE TABLE IF NOT EXISTS entries (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            paragraph TEXT NOT NULL,
-            secret TEXT NOT NULL,
-            q1 TEXT NOT NULL,
-            q2 TEXT NOT NULL,
-            q3 TEXT NOT NULL,
-            anonymous INTEGER DEFAULT 0,
-            selfie TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `).catch(err => console.error('Error initializing PostgreSQL table:', err));
-} else {
-    console.log('Connecting to local SQLite Database...');
-    const Database = require('better-sqlite3');
-    db = new Database(path.join(__dirname, 'slambook.db'));
-    db.exec(`CREATE TABLE IF NOT EXISTS entries(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        paragraph TEXT NOT NULL,
-        secret TEXT NOT NULL,
-        q1 TEXT NOT NULL,
-        q2 TEXT NOT NULL,
-        q3 TEXT NOT NULL,
-        anonymous INTEGER DEFAULT 0,
-        selfie TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )`);
-    try {
-        db.exec(`ALTER TABLE entries ADD COLUMN selfie TEXT`);
-    } catch (e) {
-        // Column already exists
-    }
-}
+// Define Schema
+const entrySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    paragraph: { type: String, required: true },
+    secret: { type: String, required: true },
+    q1: { type: String, required: true },
+    q2: { type: String, required: true },
+    q3: { type: String, required: true },
+    anonymous: { type: Number, default: 0 },
+    selfie: { type: String },
+    created_at: { type: Date, default: Date.now }
+});
+
+const Entry = mongoose.model('Entry', entrySchema);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -94,17 +65,19 @@ app.post('/api/entries', async (req, res) => {
     }
 
     try {
-        if (usePostgres) {
-            const result = await pgPool.query(
-                'INSERT INTO entries(name, phone, paragraph, secret, q1, q2, q3, anonymous, selfie) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id',
-                [name.trim(), phone.trim(), paragraph.trim(), secret.trim(), q1.trim(), q2.trim(), q3.trim(), anonymous ? 1 : 0, selfie]
-            );
-            res.json({ ok: true, id: result.rows[0].id });
-        } else {
-            const stmt = db.prepare('INSERT INTO entries(name, phone, paragraph, secret, q1, q2, q3, anonymous, selfie) VALUES(?,?,?,?,?,?,?,?,?)');
-            const info = stmt.run(name.trim(), phone.trim(), paragraph.trim(), secret.trim(), q1.trim(), q2.trim(), q3.trim(), anonymous ? 1 : 0, selfie);
-            res.json({ ok: true, id: info.lastInsertRowid });
-        }
+        const newEntry = new Entry({
+            name: name.trim(),
+            phone: phone.trim(),
+            paragraph: paragraph.trim(),
+            secret: secret.trim(),
+            q1: q1.trim(),
+            q2: q2.trim(),
+            q3: q3.trim(),
+            anonymous: anonymous ? 1 : 0,
+            selfie
+        });
+        const savedEntry = await newEntry.save();
+        res.json({ ok: true, id: savedEntry._id });
     } catch (err) {
         console.error('Error inserting entry:', err);
         res.status(500).json({ error: 'Failed to save entry' });
@@ -114,13 +87,14 @@ app.post('/api/entries', async (req, res) => {
 // Admin-only route to get all entries
 app.get('/api/entries', requireAdmin, async (req, res) => {
     try {
-        if (usePostgres) {
-            const result = await pgPool.query('SELECT * FROM entries ORDER BY id DESC');
-            res.json(result.rows);
-        } else {
-            const entries = db.prepare('SELECT * FROM entries ORDER BY id DESC').all();
-            res.json(entries);
-        }
+        const entries = await Entry.find().sort({ _id: -1 });
+        // Map _id to id to maintain frontend compatibility if it relies on 'id' instead of '_id'
+        const formattedEntries = entries.map(entry => {
+            const obj = entry.toObject();
+            obj.id = obj._id;
+            return obj;
+        });
+        res.json(formattedEntries);
     } catch (err) {
         console.error('Error fetching entries:', err);
         res.status(500).json({ error: 'Failed to fetch entries' });
@@ -130,13 +104,8 @@ app.get('/api/entries', requireAdmin, async (req, res) => {
 // Admin-only route to delete an entry
 app.delete('/api/entries/:id', requireAdmin, async (req, res) => {
     try {
-        if (usePostgres) {
-            const result = await pgPool.query('DELETE FROM entries WHERE id = $1', [req.params.id]);
-            res.json({ ok: true, deleted: result.rowCount > 0 });
-        } else {
-            const info = db.prepare('DELETE FROM entries WHERE id = ?').run(req.params.id);
-            res.json({ ok: true, deleted: info.changes > 0 });
-        }
+        const result = await Entry.findByIdAndDelete(req.params.id);
+        res.json({ ok: true, deleted: !!result });
     } catch (err) {
         console.error('Error deleting entry:', err);
         res.status(500).json({ error: 'Failed to delete entry' });
@@ -144,4 +113,8 @@ app.delete('/api/entries/:id', requireAdmin, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Slam Book running on http://localhost:${PORT}`));
+if (process.env.VERCEL !== '1') {
+    app.listen(PORT, () => console.log(`Slam Book running on http://localhost:${PORT}`));
+}
+
+module.exports = app;

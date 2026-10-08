@@ -526,7 +526,11 @@
                                 <span class="verified-badge">✓ Selfie Verified</span>
                             </div>
                         </div>
-                        <button class="btn btn-danger" onclick="deleteEntry(${x.id})">Delete 🗑️</button>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn" style="background:#25D366; color:white; padding:6px 12px; font-size:12px; border-radius:8px; border:none;" onclick="backupWhatsApp('${x.id}')">WhatsApp 💬</button>
+                            <button class="btn" style="background:#4285F4; color:white; padding:6px 12px; font-size:12px; border-radius:8px; border:none;" onclick="backupDrive('${x.id}')">Drive ☁️</button>
+                            <button class="btn btn-danger" onclick="deleteEntry('${x.id}')">Delete 🗑️</button>
+                        </div>
                     </div>
 
                     <div class="section-heading">Paragraph About You</div>
@@ -586,6 +590,26 @@
             } catch (e) {
                 alert('Error deleting entry: ' + e.message);
             }
+        }
+
+        function backupWhatsApp(id) {
+            const data = allEntries.find(e => String(e.id) === String(id));
+            if (!data) return;
+            const text = `*New Slambook Entry!* 🌟\n\n*Name:* ${data.name}\n*Phone:* ${data.phone}\n*Paragraph:* ${data.paragraph}\n*Secret:* ${data.anonymous ? 'Anonymous' : data.name} said: ${data.secret}\n*Fav Memory:* ${data.q1}\n*3 Words:* ${data.q2}\n*Remember:* ${data.q3}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function backupDrive(id) {
+            const data = allEntries.find(e => String(e.id) === String(id));
+            if (!data) return;
+            const text = `New Slambook Entry!\n\nName: ${data.name}\nPhone: ${data.phone}\nParagraph: ${data.paragraph}\nSecret: ${data.anonymous ? 'Anonymous' : data.name} said: ${data.secret}\nFav Memory: ${data.q1}\n3 Words: ${data.q2}\nRemember: ${data.q3}`;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `slambook_entry_${data.name.replace(/\\s+/g, '_')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function formatDate(dateStr) {

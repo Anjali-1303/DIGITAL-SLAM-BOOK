@@ -10,6 +10,7 @@
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "express": "^4.21.2",
+    "mongoose": "^9.10.4",
     "pg": "^8.23.1"
   }
 }
